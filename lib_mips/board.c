@@ -38,6 +38,26 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define SDRAM_CFG1_REG RALINK_SYSCTL_BASE + 0x0304
 
+
+#define BUTTON_PAIR_PIN         (2)
+
+#define BUTTON_RESET_PIN        (2) //MT7688
+//#define BUTTON_RESET_PIN        (38)  //demo mt7628 4g+5g
+//#define BUTTON_RESET_PIN        (3)  //4g+5g
+//#define BUTTON_RESET_PIN        (40)  //button ?
+
+//#define BUTTON_RESET_PIN        (2)  //button //030-6
+//#define BUTTON_RESET_PIN        (11)  //button //030-6
+#define BUTTON_RESET_PIN        (2)  //button //030-6
+
+#define LED_POWER_PIN           (4)
+#define LED_WALN_PIN            (19)
+#define LED_ZIGBEE_PIN          (5)
+#define LED_LINK0               (43)
+#define LED_LINK0               (38)
+#define LED_LINK1               (42)
+
+
 int modifies= 0;
 
 #ifdef DEBUG
@@ -109,6 +129,8 @@ static int auto_load = 0;
 unsigned long mips_cpu_feq;
 unsigned long mips_bus_feq;
 
+/* httpd sever ip */
+static unsigned char gHttpIP[] = {192,168,100,250};
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"
@@ -128,6 +150,16 @@ static char  file_name_space[ARGV_LEN];
         ".set\tpop"                                             \
         : "=r" (__res));                                        \
         __res;})
+
+//added by mango
+void gpio_init(void);
+void led_on(void);
+void led_off(void);
+int detect_wps(void);
+int gpio_test( void );
+
+/* led op*/
+void led_op(int pin, int op);
 
 #if defined (CONFIG_DDR_CAL)
 __attribute__((nomips16)) void dram_cali(void);
@@ -604,6 +636,12 @@ init_fnc_t *init_sequence[] = {
 };
 #endif
 
+
+static void netHttpIPSet(uint8_t ip[])
+{
+   gd->bd->bi_ip_addr = ip[0] | (ip[1]<<8) | (ip[2] << 16) | (ip[3]<<24) ;
+}
+
 //  
 __attribute__((nomips16)) void board_init_f(ulong bootflag)
 {
@@ -966,6 +1004,8 @@ int tftp_config(int type, char *argv[])
 	printf("(%s) ", file);
 	if (auto_load == 0)
 		input_value(file);
+	else
+		strcpy(file, "fw.bin");
 	if (file == NULL)
 		return 1;
 	copy_filename (argv[2], file, sizeof(file));
@@ -1262,6 +1302,134 @@ int check_image_validation(void)
 	return ret;
 }
 #endif
+
+#define WIFI_EEPROM_LEN  512
+#define WIFI_EEPROM_OFFSET 0x40000
+
+void ModifyMacAddress()
+{
+    char buf[30];
+    char tmp[4];
+    int  i;
+    unsigned int mac;
+    unsigned int mac1;
+    unsigned char *mac_addr =(unsigned char *)(CFG_LOAD_ADDR + 40);
+    unsigned char *mac0_addr = (unsigned char *)(CFG_LOAD_ADDR + 4);
+    
+    unsigned char *mac2_addr = (unsigned char *)(CFG_LOAD_ADDR);
+unsigned char mac2_temp[2];
+#if 0
+    printf("MAC address is: %02X:%02X:%02X:%02X:%02X:%02X",
+            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3],
+            mac_addr[4], mac_addr[5]);
+#else
+    printf("CFG LOAD ADDR data:");
+    for (i = 0; i < 0x40;i++) {
+        printf("[%02X]",mac0_addr[i]);
+    }
+    printf("\r\n");
+#endif
+
+    buf[0] = '\0';
+    while(1){
+        printf("\nPlease input mac address:");
+        buf[0] = '\0';
+        input_value(buf);
+        printf("\nInput is: %s\n", buf);
+
+        if (strlen(buf) < 12) {
+            printf("mac address format error\n");
+            continue;
+        }    
+
+        for (i=0; i<6; i++) {    
+            strncpy(tmp, buf + i*2, 2);
+            tmp[2] = '\0';
+            int val = simple_strtoul(tmp, NULL, 16); 
+            mac_addr[i] = val & 0xFF;
+        }    
+        mac0_addr[0] = mac_addr[0];
+        mac0_addr[1] = mac_addr[1];
+        mac_addr[6] = mac_addr[0];
+        mac_addr[7] = mac_addr[1];
+        mac2_temp[0] = mac_addr[0];
+        mac2_temp[1] = mac_addr[1];
+
+        //printf("test -MAC2:%x\n", mac2_temp[0]);
+        //printf("test -MAC2:%x\n", mac2_temp[1]);
+        
+	mac1 = (mac_addr[0] << 8) | (mac_addr[1]);
+        mac =(mac_addr[2] << 24) | (mac_addr[3] << 16) | (mac_addr[4] << 8) | (mac_addr[5]);
+
+        mac -= 1;
+	//mac0_addr[0] = (mac >> 8) & 0xff;                                                                                                           
+        //mac0_addr[1] = mac & 0xff;
+        mac0_addr[2] = (mac >> 24) & 0xff;
+        mac0_addr[3] = (mac >> 16) & 0xff;
+        mac0_addr[4] = (mac >> 8) & 0xff;
+        mac0_addr[5] = mac & 0xff;
+        printf("MAC0:%x\n", mac0_addr);
+
+        mac += 2;
+        //mac_addr[6] = (mac >> 8) & 0xff; 
+        //mac_addr[7] = mac & 0xff;
+        mac_addr[8] = (mac >> 24) & 0xff;
+        mac_addr[9] = (mac >> 16) & 0xff;
+        mac_addr[10] = (mac >> 8) & 0xff;
+        mac_addr[11] = mac & 0xff;
+        printf("MAC1:%x\n", mac_addr);
+
+	/*mac += 3;
+	printf("MAC2:%x\n", mac);
+	mac2_addr[0] = mac_addr[0];
+        mac2_addr[1] = mac_addr[1];
+	mac2_addr[2] = (mac >> 24) & 0xff;
+        mac2_addr[3] = (mac >> 16) & 0xff;
+        mac2_addr[4] = (mac >> 8) & 0xff;
+        mac2_addr[5] = mac & 0xff;
+	*/
+        raspi_erase_write((char*)CFG_LOAD_ADDR, WIFI_EEPROM_OFFSET, WIFI_EEPROM_LEN);
+   
+	mac2_addr = (unsigned char *)(CFG_LOAD_ADDR + 4); 
+	raspi_read((char*)CFG_LOAD_ADDR, WIFI_EEPROM_OFFSET + 32768, WIFI_EEPROM_LEN);
+        
+	mac2_addr[0] = mac2_temp[0];//(mac >> 8) & 0xff; 
+        mac2_addr[1] = mac2_temp[1];//mac & 0xff;
+        mac += 1;
+        //mac2_addr[0] = mac_addr[0];//(mac >> 8) & 0xff; 
+        //mac2_addr[1] = mac_addr[1];//mac & 0xff;
+        mac2_addr[2] = (mac >> 24) & 0xff;                                                                                                           
+        mac2_addr[3] = (mac >> 16) & 0xff;                                                                                                           
+        mac2_addr[4] = (mac >> 8) & 0xff;                                                                                                            
+        mac2_addr[5] = mac & 0xff;
+        printf("ztpeng---#MCAC2:%d\n", mac2_addr[0]);
+	
+        printf("ztpeng----#MCAC2:%d:%d:%d:%d:%d\n", mac2_addr[1], mac2_addr[2], mac2_addr[3], mac2_addr[4], mac2_addr[5]);
+	raspi_erase_write((char*)CFG_LOAD_ADDR, WIFI_EEPROM_OFFSET + 32768, WIFI_EEPROM_LEN);
+
+	break;
+    }    
+}
+
+void CheckMacAddress(void)
+{
+    unsigned char * mac_addr =(unsigned char *) (CFG_LOAD_ADDR + 40);
+    raspi_read((char*)CFG_LOAD_ADDR, WIFI_EEPROM_OFFSET, WIFI_EEPROM_LEN);
+
+	printf("\nztpeng--->CFG_LOAD_ADDR=0x%x, WIFI_EEPROM_OFFSET=0x%x, WIFI_EEPROM_LEN=0x%x", CFG_LOAD_ADDR, WIFI_EEPROM_OFFSET, WIFI_EEPROM_LEN);
+    printf("MAC address is: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3],
+            mac_addr[4], mac_addr[5]);
+    switch(mac_addr[0]) {
+        case 0x00:
+        case 0xff:
+            ModifyMacAddress();
+            break;
+    }
+
+
+}
+
 
 
 /************************************************************************
@@ -1932,35 +2100,92 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 		setenv("BootType", s1);
 	}
 
-	OperationSelect();   
-	printf("default: %c\n", BootType);
-	while (timer1 > 0) {
-		--timer1;
-		/* delay 100 * 10ms */
-		for (i=0; i<100; ++i) {
-			if ((my_tmp = tstc()) != 0) {	/* we got a key press	*/
-				timer1 = 0;	/* no more delay	*/
-				BootType = getc();
-				if ((BootType < '0' || BootType > '5') && (BootType != '7') && (BootType != '8') && (BootType != '9'))
-					BootType = '3';
-				printf("\n\rYou choosed %c\n\n", BootType);
-				break;
-			}
-			udelay (10000);
+
+
+#if 1 //au
+	/* check mac */
+	CheckMacAddress();
+
+	gpio_init();
+
+	/* detect wps button */
+	int counter = 0;
+	printf("Detect WPS Button!\n");
+	while(1){//!detect_wps()){
+		led_on();
+		udelay(500000);
+		led_off();
+		udelay(500000);
+		counter++;
+
+		if(detect_wps()) {
+			break;
 		}
-		printf ("\b\b\b%2d ", timer1);
+		if (counter > 7){
+			break;
+		}
 	}
-	putc ('\n');
+
+	if ( counter > 1) {
+#if 0
+		printf("ztpeng Key Pressed, Start Uboot Uppgrade Web: 192.168.0.250...\n");
+
+		netHttpIPSet(gHttpIP); //comment this, press use 192.168.0.250, button use 192.168.0.250
+
+		eth_initialize(gd->bd);
+		NetLoopHttpd();
+#else
+		auto_load = 1;
+		BootType = '2';
+#endif
+	}
+
+  led_op(LED_POWER_PIN, 1);
+#endif
+
+	printf("default: %c\n", BootType);
+	OperationSelect();
+	if (auto_load == 0) {
+		while (timer1 > 0) {
+			--timer1;
+			/* delay 100 * 10ms */
+			for (i=0; i<100; ++i) {
+				if ((my_tmp = tstc()) != 0) {	/* we got a key press	*/
+					timer1 = 0;	/* no more delay	*/
+					BootType = getc();
+					if (BootType != 'n') {
+						if ((BootType < '0' || BootType > '5') && (BootType != '7') && (BootType != '8') && (BootType != '9')) {
+							BootType = '3';
+						}
+					}
+					printf("\n\rYou choosed %c\n\n", BootType);
+					break;
+				}
+				udelay (10000);
+			}
+			printf ("\b\b\b%2d ", timer1);
+		}
+		putc ('\n');
+	}
+
+
 	if(BootType == '3') {
 		char *argv[2];
 		sprintf(addr_str, "0x%X", CFG_KERN_ADDR);
 		argv[1] = &addr_str[0];
 		printf("   \n3: System Boot system code via Flash.\n");
 		do_bootm(cmdtp, 0, 2, argv);
+#if 0 //au
 #ifdef RALINK_HTTP_UPGRADE_FUN
 		eth_initialize(gd->bd);
 		NetUipLoop = 1;
 		uip_main();
+#endif
+#else
+	  printf("bootm kernel failed! start net httpd server\n");
+	 netHttpIPSet(gHttpIP);
+		eth_initialize(gd->bd);
+		NetLoopHttpd();
 #endif
 	}
 	else {
@@ -1975,6 +2200,16 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 #endif
 
 		switch(BootType) {
+#if 1 // au
+		case 'n':
+      printf( "\n\nHTTP server is starting for update...\n\n");
+      gHttpIP[2] = 100;
+            netHttpIPSet(gHttpIP);
+      eth_initialize(gd->bd);
+      NetLoopHttpd();
+			break;
+#endif
+
 		case '1':
 			printf("   \n%d: System Load Linux to SDRAM via TFTP. \n", SEL_LOAD_LINUX_SDRAM);
 			tftp_config(SEL_LOAD_LINUX_SDRAM, argv);           
@@ -1985,11 +2220,13 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 
 		case '2':
 			printf("   \n%d: System Load Linux Kernel then write to Flash via TFTP. \n", SEL_LOAD_LINUX_WRITE_FLASH);
-			printf(" Warning!! Erase Linux in Flash then burn new one. Are you sure?(Y/N)\n");
-			confirm = getc();
-			if (confirm != 'y' && confirm != 'Y') {
-				printf(" Operation terminated\n");
-				break;
+			if (auto_load == 0) {
+				printf(" Warning!! Erase Linux in Flash then burn new one. Are you sure?(Y/N)\n");
+				confirm = getc();
+				if (confirm != 'y' && confirm != 'Y') {
+					printf(" Operation terminated\n");
+					break;
+				}
 			}
 			tftp_config(SEL_LOAD_LINUX_WRITE_FLASH, argv);
 			argc= 3;
@@ -2141,11 +2378,13 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 
 		case '9':
 			printf("   \n%d: System Load Boot Loader then write to Flash via TFTP. \n", SEL_LOAD_BOOT_WRITE_FLASH);
-			printf(" Warning!! Erase Boot Loader in Flash then burn new one. Are you sure?(Y/N)\n");
-			confirm = getc();
-			if (confirm != 'y' && confirm != 'Y') {
-				printf(" Operation terminated\n");
-				break;
+			if (auto_load == 0) {
+				printf(" Warning!! Erase Boot Loader in Flash then burn new one. Are you sure?(Y/N)\n");
+				confirm = getc();
+				if (confirm != 'y' && confirm != 'Y') {
+					printf(" Operation terminated\n");
+					break;
+				}
 			}
 			tftp_config(SEL_LOAD_BOOT_WRITE_FLASH, argv);
 			argc= 3;
@@ -2265,6 +2504,12 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 		default:
 			printf("   \nSystem Boot Linux via Flash.\n");
 			do_bootm(cmdtp, 0, 1, argv);
+
+      printf("bootm kernel failed! start net httpd server\n");
+            netHttpIPSet(gHttpIP);
+      eth_initialize(gd->bd);
+      NetLoopHttpd();
+
 			break;            
 		} /* end of switch */   
 
@@ -3647,3 +3892,58 @@ EXIT:
 	return ;
 }
 #endif /* #defined (CONFIG_DDR_CAL) */
+
+void led_on(void) {
+}
+void led_off(void) {
+}
+void led_op(int pin, int op) {
+}
+void led_zigbee_err_on(void) {
+}
+void led_zigbee_err_off(void) {
+}
+int detect_wps(void) {
+	int val;
+	val = RALINK_REG(0xb0000620) ;
+	//printf("val:%08x\n", val);
+
+	val = RALINK_REG(0xb0000620) & (1 << BUTTON_RESET_PIN);
+	printf("wps val:%d\n", val);
+	return val;
+}
+void gpio_init(void) {
+#if 1
+	u32 val;
+
+	/* AGPIO CFG */
+	val=0;
+	//val|=0x0f<<17;  //ephy p1-p4 selection digital PAD
+	val|=0x1f;      //refclk,i2s digital PAD
+	RALINK_REG(RT2880_SYS_CNTL_BASE+0x3c)=val;
+
+	/* set gpio1_mode */
+	val = 0;
+	val|=0x05<<28;//pwm0,pwm1, 与GPIO19引脚相关联
+	val|=0x01<<20;//i2c_mode
+	val|=0x01<<6;//i2s
+	RALINK_REG(RT2880_SYS_CNTL_BASE+0x60)=val;
+	//printf("\nGPIO1_MODE(%x):%x\n", RT2880_SYS_CNTL_BASE + 0x60, RALINK_REG(RT2880_SYS_CNTL_BASE + 0x60));
+
+	val=RALINK_REG(0xb0000600);	
+	/* input gpio_ctrl_0 button_pair button_reset */
+	val&=~((1 << BUTTON_PAIR_PIN) | (1 << BUTTON_RESET_PIN));
+	/* output gpio_ctrl_o power_led wlan_led zigbee_led */
+	val |= (1 << LED_POWER_PIN) | (1 << LED_WALN_PIN) | (1 << LED_ZIGBEE_PIN);
+	RALINK_REG(0xb0000600)=val;	
+	//printf("GPIO CTRL(%x):%x\n", RT2880_REG_PIODIR , RALINK_REG(RT2880_REG_PIODIR));
+
+	/* led off */
+	RALINK_REG(RT2880_SYS_CNTL_BASE+0x630) = (1 << LED_POWER_PIN) | (1 << LED_WALN_PIN ) | (1 << LED_ZIGBEE_PIN) | (1 << BUTTON_RESET_PIN);
+	/* power led on */
+	RALINK_REG(RT2880_SYS_CNTL_BASE+0x630) &= ~(1 << LED_POWER_PIN); 
+
+	detect_wps();
+#endif
+
+}

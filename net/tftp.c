@@ -324,7 +324,11 @@ TftpStart (void)
 	TftpStarted=1;
 
 	if (BootFile[0] == '\0') {
+#if 0
 	    sprintf(default_filename, "%s","test.bin");
+#else
+	    sprintf(default_filename, "%s","test.bin");
+#endif
 	    tftp_filename = default_filename;
 
 		printf ("*** Warning: no boot file name; using '%s'\n",

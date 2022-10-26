@@ -1336,6 +1336,7 @@ int raspi_erase_write(char *buf, unsigned int offs, int count)
 
 	ra_dbg("%s: offs:%x, count:%x\n", __func__, offs, count);
 
+#if 0
 	if (count > (spi_chip_info->sector_size * spi_chip_info->n_sectors) -
 			(CFG_BOOTLOADER_SIZE + CFG_CONFIG_SIZE + CFG_FACTORY_SIZE)) {
 		printf("Abort: image size larger than %d!\n\n", (spi_chip_info->sector_size * spi_chip_info->n_sectors) -
@@ -1343,6 +1344,7 @@ int raspi_erase_write(char *buf, unsigned int offs, int count)
 		udelay(10*1000*1000);
 		return -1;
 	}
+#endif
 
 	while (count > 0) {
 #define BLOCK_ALIGNE(a) (((a) & blockmask))
