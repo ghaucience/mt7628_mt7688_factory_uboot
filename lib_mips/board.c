@@ -2104,7 +2104,7 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 
 #if 1 //au
 	/* check mac */
-	CheckMacAddress();
+	//CheckMacAddress();
 
 	gpio_init();
 
