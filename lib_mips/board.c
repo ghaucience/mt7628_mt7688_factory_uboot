@@ -51,8 +51,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BUTTON_RESET_PIN        (2)  //button //030-6
 
 #define LED_POWER_PIN           (4)
-#define LED_WALN_PIN            (19)
 #define LED_ZIGBEE_PIN          (5)
+#define LED_WALN_PIN            (19)
+
 #define LED_LINK0               (43)
 #define LED_LINK0               (38)
 #define LED_LINK1               (42)
@@ -3933,6 +3934,7 @@ void gpio_init(void) {
 	val=RALINK_REG(0xb0000600);	
 	/* input gpio_ctrl_0 button_pair button_reset */
 	val&=~((1 << BUTTON_PAIR_PIN) | (1 << BUTTON_RESET_PIN));
+
 	/* output gpio_ctrl_o power_led wlan_led zigbee_led */
 	val |= (1 << LED_POWER_PIN) | (1 << LED_WALN_PIN) | (1 << LED_ZIGBEE_PIN);
 	RALINK_REG(0xb0000600)=val;	
@@ -3942,6 +3944,18 @@ void gpio_init(void) {
 	RALINK_REG(RT2880_SYS_CNTL_BASE+0x630) = (1 << LED_POWER_PIN) | (1 << LED_WALN_PIN ) | (1 << LED_ZIGBEE_PIN) | (1 << BUTTON_RESET_PIN);
 	/* power led on */
 	RALINK_REG(RT2880_SYS_CNTL_BASE+0x630) &= ~(1 << LED_POWER_PIN); 
+	RALINK_REG(RT2880_SYS_CNTL_BASE+0x640) = (1 << LED_POWER_PIN);
+	/*
+	if (0) {
+		int count = 10;
+		while(count > 0){
+			RALINK_REG(RT2880_SYS_CNTL_BASE+0x630) = (1 << LED_POWER_PIN) | (1 << LED_WALN_PIN ) | (1 << LED_ZIGBEE_PIN) | (1 << BUTTON_RESET_PIN);
+			udelay(500000);
+			udelay(500000);
+			count--;
+		}
+	}
+	*/
 
 	detect_wps();
 #endif
