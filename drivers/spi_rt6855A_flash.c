@@ -275,8 +275,8 @@ static struct chip_info chips_data [] = {
 	{ "W25Q64BV",           0xef, 0x40170000, 64 * 1024, 128, 0 }, //S25FL064K //W25Q64FV
 	{ "W25Q128BV",          0xef, 0x40180000, 64 * 1024, 256, 0 },//W25Q128FV
 	{ "W25Q256FV",          0xef, 0x40190000, 64 * 1024, 512, 1 },
-	{ "W25Q256JV",		0xef, 0x40190000, 64 * 1024, 512,  0 },
-	{ "W25Q512JV",		0xef, 0x40200000, 64 * 1024, 1024,  0 },
+	{ "W25Q256JV",		0xef, 0x40190000, 64 * 1024, 512,  1 },
+	{ "W25Q512JV",		0xef, 0x40200000, 64 * 1024, 1024,  1 },
 	{ "N25Q032A13ESE40F",   0x20, 0xba161000, 64 * 1024, 64,  0 },
 	{ "N25Q064A13ESE40F",   0x20, 0xba171000, 64 * 1024, 128, 0 },
 	{ "N25Q128A13ESE40F",   0x20, 0xba181000, 64 * 1024, 256, 0 },
@@ -1338,6 +1338,7 @@ int raspi_erase_write(char *buf, unsigned int offs, int count)
 	int blockmask = blocksize - 1;
 
 	ra_dbg("%s: offs:%x, count:%x\n", __func__, offs, count);
+	//printf("%s: offs:%x, count:%x\n", __func__, offs, count);
 
 #if 0
 	if (count > (spi_chip_info->sector_size * spi_chip_info->n_sectors) -
@@ -1350,7 +1351,7 @@ int raspi_erase_write(char *buf, unsigned int offs, int count)
 #endif
 
 	while (count > 0) {
-#define BLOCK_ALIGNE(a) (((a) & blockmask))
+		#define BLOCK_ALIGNE(a) (((a) & blockmask))
 		if (BLOCK_ALIGNE(offs) || (count < blocksize)) {
 			char *block;
 			unsigned int piece, blockaddr;
@@ -1392,6 +1393,8 @@ int raspi_erase_write(char *buf, unsigned int offs, int count)
 				free(temp);
 				return -2;
 			}
+			
+			printf("write blockaddr:%08X\n", blockaddr);
 
 
 			if(memcmp(block, temp, blocksize) == 0)
