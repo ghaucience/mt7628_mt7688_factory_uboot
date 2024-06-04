@@ -41,14 +41,15 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define BUTTON_PAIR_PIN         (2)
 
-#define BUTTON_RESET_PIN        (2) //MT7688
+//#define BUTTON_RESET_PIN        (2) //MT7688
 //#define BUTTON_RESET_PIN        (38)  //demo mt7628 4g+5g
 //#define BUTTON_RESET_PIN        (3)  //4g+5g
 //#define BUTTON_RESET_PIN        (40)  //button ?
 
 //#define BUTTON_RESET_PIN        (2)  //button //030-6
 //#define BUTTON_RESET_PIN        (11)  //button //030-6
-#define BUTTON_RESET_PIN        (2)  //button //030-6
+//#define BUTTON_RESET_PIN        (2)  //button //030-6
+#define BUTTON_RESET_PIN        (3)
 
 #define LED_POWER_PIN           (4)
 #define LED_ZIGBEE_PIN          (5)
