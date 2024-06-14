@@ -3973,10 +3973,12 @@ void gpio_init(void) {
 #define FIRMWARE_ADDRESS	(0x50000)
 #define FIRMWARE1_ADDRESS (0xC50000)
 #define MISC_ADDRESS			(0x1850000)
+#define FIRMWARE_MAX_LENGTH (1024*1024*12)
 #else //test
 #define FIRMWARE_ADDRESS	(0x50000)
 #define FIRMWARE1_ADDRESS (0xE00000)
 #define MISC_ADDRESS			(0xE10000)
+#define FIRMWARE_MAX_LENGTH (1024*1024*12)
 #endif
 int my_view(char *str, char *buf, int len) {
 	int i = 0;
@@ -4053,6 +4055,11 @@ int check_image_firmware_ok(unsigned int address, unsigned long *size) { //检�
 		return 0;
 	}
 
+	printf("Check Image Length < 12M\n");
+	if (len >= FIRMWARE_MAX_LENGTH) {
+		return 0;
+	}
+
 	*size = len;
 
 	return 1;
@@ -4113,16 +4120,14 @@ int check_image_validation_new() { // 升级逻辑函数
 	}
 	printf("no misc upgrade flag, normal...\n");
 
-	return 0;
-
 	int f_ok = check_image_firmware_ok(FIRMWARE_ADDRESS, &len);
 	int f1_ok = check_image_firmware_ok(FIRMWARE1_ADDRESS, &len1);
 	if (f_ok == 0) {
 		if (f1_ok == 0) {
-			// two image all not ok , do nothing
+			printf("two image all not ok, ~_~!!!\n");
 		} else {
 			printf("restore fw1 -> fw ...\n");
-			ret = copy_image_firmware(FIRMWARE1_ADDRESS, FIRMWARE_ADDRESS, len1);
+			int ret = copy_image_firmware(FIRMWARE1_ADDRESS, FIRMWARE_ADDRESS, len1);
 			printf("restore ret:%d\n", ret);
 			reset_board();
 			return 0;
@@ -4130,9 +4135,10 @@ int check_image_validation_new() { // 升级逻辑函数
 	} else {
 		if (f1_ok == 0) {
 			// two image all ok , do nothing
+			printf("two image all ok, len:%08X, len1:%08X\n", len, len1);
 		} else { 
 			printf("restore fw -> fw1 ...\n");
-			ret = copy_image_firmware(FIRMWARE_ADDRESS, FIRMWARE1_ADDRESS, len);
+			int ret = copy_image_firmware(FIRMWARE_ADDRESS, FIRMWARE1_ADDRESS, len);
 			printf("restore ret:%d\n", ret);
 			reset_board();
 			return 0;
