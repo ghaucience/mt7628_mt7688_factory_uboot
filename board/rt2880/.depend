@@ -1,0 +1,97 @@
+# 1 "/home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/board/rt2880//"
+rt2880_init.o: rt2880_init.S \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/config.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/rt2880.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/../../autoconf.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/cmd_confdefs.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/version.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/../uboot_version.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/regdef.h \
+  include/sysc.h include/product.h include/mem_map.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/rt_mmap.h \
+  include/mem_map_1fc0.h include/chip_reg_map.h include/aux_reg_map.h \
+  include/product.h include/mem_map.h include/mac.inc \
+  include/chip_reg_map.h include/cpu.h
+# 1 "/home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/board/rt2880//"
+memsetup.o: memsetup.S \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/config.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/rt2880.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/../../autoconf.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/cmd_confdefs.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/version.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/../uboot_version.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/regdef.h \
+  include/product.h include/mem_map.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/rt_mmap.h \
+  include/mem_map_1fc0.h include/chip_reg_map.h include/aux_reg_map.h \
+  include/mem_map.h include/mac.inc include/chip_reg_map.h
+# 1 "/home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/board/rt2880//"
+rt2880.o: rt2880.c \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/common.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/config.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/rt2880.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/../../autoconf.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/cmd_confdefs.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/bitops.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/bitops.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/config.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/posix_types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/stddef.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/posix_types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/byteorder.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/byteorder/little_endian.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/byteorder/swab.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/byteorder/generic.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/sgidefs.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/system.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/ptrace.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/isadep.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/string.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/string.h \
+  /opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stdarg.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/part.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/ide.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/flash.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/image.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/u-boot.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/global_data.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/regdef.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/command.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/addrspace.h
+# 1 "/home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/board/rt2880//"
+serial.o: serial.c \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/common.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/config.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/rt2880.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/configs/../../autoconf.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/cmd_confdefs.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/bitops.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/bitops.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/config.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/posix_types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/stddef.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/posix_types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/types.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/byteorder.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/byteorder/little_endian.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/byteorder/swab.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/byteorder/generic.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/sgidefs.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/system.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/ptrace.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/isadep.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/linux/string.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/string.h \
+  /opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stdarg.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/part.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/ide.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/flash.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/image.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/u-boot.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/global_data.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/asm/regdef.h \
+  serial.h \
+  /home/au/all/gwork/MT7688/MTK_APSoC_SDK/Uboot/include/rt_mmap.h

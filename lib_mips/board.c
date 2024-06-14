@@ -4134,14 +4134,14 @@ int check_image_validation_new() { // 升级逻辑函数
 		} 
 	} else {
 		if (f1_ok == 0) {
-			// two image all ok , do nothing
-			printf("two image all ok, len:%08X, len1:%08X\n", len, len1);
-		} else { 
 			printf("restore fw -> fw1 ...\n");
 			int ret = copy_image_firmware(FIRMWARE_ADDRESS, FIRMWARE1_ADDRESS, len);
 			printf("restore ret:%d\n", ret);
 			reset_board();
 			return 0;
+		} else { 
+			// two image all ok , do nothing
+			printf("two image all ok, len:%08X, len1:%08X\n", len, len1);
 		}
 	}
 	return 0;
