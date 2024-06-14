@@ -3969,11 +3969,11 @@ void gpio_init(void) {
 }
 
 //added by au 
-#if 0 //32M
+#if 1 //32M
 #define FIRMWARE_ADDRESS	(0x50000)
-#define FIRMWARE1_ADDRESS (0xC50000)
-#define MISC_ADDRESS			(0x1850000)
-#define FIRMWARE_MAX_LENGTH (1024*1024*12)
+#define FIRMWARE1_ADDRESS (0xCD0000)
+#define MISC_ADDRESS			(0x1950000)
+#define FIRMWARE_MAX_LENGTH (0xC80000)
 #else //test
 #define FIRMWARE_ADDRESS	(0x50000)
 #define FIRMWARE1_ADDRESS (0xE00000)
