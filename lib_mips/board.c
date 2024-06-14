@@ -3995,9 +3995,46 @@ int misc_clear_upgrade_flag() { //清除升级标志
 
 	return 0;
 }
-int check_image_firmware(unsigned int address, int *len) { //检测address地方的image 有效性
+int check_image_firmware_ok(unsigned int address, unsigned long *size) { //检测address地方的image 有效性
+	printf("\n=================================================\n");
+	printf("Check image validation at %08X \n", address);
+
+	image_header_t hdr;
+	raspi_read((char *)&hdr, (unsigned int)address, sizeof(image_header_t));
+	printf("Image Header Magic Number --> ");
+	if (ntohl(hdr.ih_magic) != IH_MAGIC) {
+		return 0;
+	}
+
+	printf("Image1 Header Checksum --> ");
+	unsigned long chksum = ntohl(hdr.ih_hcrc);
+	hdr.ih_hcrc = 0;
+	if (crc32(0, (char *)&hdr, sizeof(image_header_t)) != chksum) {
+		return 0;
+	}
+
+	printf("Image1 Data Checksum --> ");
+	chksum = ntohl(hdr.ih_dcrc);
+	unsigned long len = ntohl(hdr.ih_size);
+	raspi_read((char *)CFG_SPINAND_LOAD_ADDR, (unsigned int)address +  sizeof(image_header_t),len);
+	if (crc32(0, (char *)CFG_SPINAND_LOAD_ADDR, len) != chksum) {
+		return 0;
+	}
+
+	*size = len;
+
+	return 1;
 }
 int copy_image_firmware(unsigned int src, unsigned int dst, int len) { //从 src 处把 image 复制到 dst 
+	printf("Copy Image: from %08X to %08X, size=0x%08X\n", src, dst, len);
+	int ret = raspi_read((char *)CFG_SPINAND_LOAD_ADDR, src, len);
+	if (ret <= 0) {
+		return -1;
+	}
+	ret = raspi_erase_write((char *)CFG_SPINAND_LOAD_ADDR, dst, len);
+	if (ret != 0) {
+		return -2;
+	}
 	return 0;
 }
 int reset_board() { // 重启 board
@@ -4014,7 +4051,7 @@ int check_image_validation_new() { // 升级逻辑函数
 
 	if (misc_has_upgrade_flag()) {
 		printf("has misc upgrade flag, checking fw...\n");
-		if (!check_image_firmware(FIRMWARE1_ADDRESS, &len1)) {
+		if (!check_image_firmware_ok(FIRMWARE1_ADDRESS, &len1)) {
 			printf("checking fw failed, clear misc\n");
 			misc_clear_upgrade_flag();
 			reset_board();
@@ -4032,8 +4069,8 @@ int check_image_validation_new() { // 升级逻辑函数
 	}
 
 
-	int f_ok = check_image_firmware(FIRMWARE_ADDRESS, &len);
-	int f1_ok = check_image_firmware(FIRMWARE1_ADDRESS, &len1);
+	int f_ok = check_image_firmware_ok(FIRMWARE_ADDRESS, &len);
+	int f1_ok = check_image_firmware_ok(FIRMWARE1_ADDRESS, &len1);
 	if (f_ok == 0) {
 		if (f1_ok == 0) {
 			// two image all not ok , do nothing
