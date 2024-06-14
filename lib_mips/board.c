@@ -3962,3 +3962,49 @@ void gpio_init(void) {
 #endif
 
 }
+
+//added by au 
+#define FIRMWARE_ADDRESS	(0x50000)
+#define FIRMWARE1_ADDRESS (0xC50000)
+#define MISC_ADDRESS			(0x1850000)
+int misc_has_upgrade_flag() {   //检测升级标志, 从`misc`分区里面读取前32个字节,判断为`recovery`就视为升级
+	char buf[64] = {0};
+	memset(buf, 0, sizeof(buf));
+
+	int ret = raspi_read((char *)buf, MISC_ADDRESS, sizeof(buf));
+	if (ret <= 0) {
+		return 0;
+	}
+	buf[ret] = 0;
+
+	char *command = "recovery";
+	if (strcmp(buf, command) != 0) {
+		return 0;
+	}
+	
+	return 1;
+}
+int misc_clear_upgrade_flag() { //清除升级标志
+	char buf[64] = {0};
+	memset(buf, 0, sizeof(buf));
+
+	int ret = raspi_erase_write(buf, MISC_ADDRESS, sizeof(buf));
+	if (ret != 0) {
+		return -1;
+	}
+
+	return 0;
+}
+int check_image_firmware(unsigned int address) { //检测address地方的image 有效性
+}
+int copy_image_firmware(unsigned int src, unsigned int dst, int len) { //从 src 处把 image 复制到 dst 
+	return 0;
+}
+int reset_board() { // 重启 board
+	run_command("reset", 0);
+	return 0;
+}
+int check_image_validation_new() { // 升级逻辑函数
+	return 0;
+}
+
