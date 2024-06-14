@@ -2086,6 +2086,11 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 #ifdef DUAL_IMAGE_SUPPORT
 	check_image_validation();
 #endif
+
+	//added by au
+	int check_image_validation_new();
+	check_image_validation_new();
+
 /*config bootdelay via environment parameter: bootdelay */
 	{
 	    char * s;
@@ -3964,21 +3969,48 @@ void gpio_init(void) {
 }
 
 //added by au 
+#if 0 //32M
 #define FIRMWARE_ADDRESS	(0x50000)
 #define FIRMWARE1_ADDRESS (0xC50000)
 #define MISC_ADDRESS			(0x1850000)
+#else //test
+#define FIRMWARE_ADDRESS	(0x50000)
+#define FIRMWARE1_ADDRESS (0xE00000)
+#define MISC_ADDRESS			(0xE10000)
+#endif
+int my_view(char *str, char *buf, int len) {
+	int i = 0;
+	printf("%s", str);
+	for (i = 0; i < len; i++) {
+		printf("[%02X] ", buf[i]&0xff);
+		if ( (i+1) % 30 == 0) {
+			printf("\n");
+		}
+	}
+	printf("\n");
+}
 int misc_has_upgrade_flag() {   //检测升级标志, 从`misc`分区里面读取前32个字节,判断为`recovery`就视为升级
-	char buf[64] = {0};
+	unsigned char buf[64] = {0};
 	memset(buf, 0, sizeof(buf));
 
 	int ret = raspi_read((char *)buf, MISC_ADDRESS, sizeof(buf));
 	if (ret <= 0) {
+		printf("read misc failed\n");
 		return 0;
 	}
-	buf[ret] = 0;
+	//my_view("[ret]:\n", buf, ret);
+	int i = 0;
+	for (i = 0; i < ret; i++) {
+		if ((buf[i]^0xff) == 0) {
+			buf[i] = 0;
+		}
+	}
+	//my_view("[ret]:\n", buf, ret);
 
 	char *command = "recovery";
 	if (strcmp(buf, command) != 0) {
+		//printf("buf:[%s]\n", buf);
+		//printf("cmd:[%s]\n", command);
 		return 0;
 	}
 	
@@ -3986,7 +4018,7 @@ int misc_has_upgrade_flag() {   //检测升级标志, 从`misc`分区里面读�
 }
 int misc_clear_upgrade_flag() { //清除升级标志
 	char buf[64] = {0};
-	memset(buf, 0, sizeof(buf));
+	memset(buf, 0xff, sizeof(buf));
 
 	int ret = raspi_erase_write(buf, MISC_ADDRESS, sizeof(buf));
 	if (ret != 0) {
@@ -4001,19 +4033,19 @@ int check_image_firmware_ok(unsigned int address, unsigned long *size) { //检�
 
 	image_header_t hdr;
 	raspi_read((char *)&hdr, (unsigned int)address, sizeof(image_header_t));
-	printf("Image Header Magic Number --> ");
+	printf("Image Header Magic Number --> \n");
 	if (ntohl(hdr.ih_magic) != IH_MAGIC) {
 		return 0;
 	}
 
-	printf("Image1 Header Checksum --> ");
+	printf("Image1 Header Checksum --> \n");
 	unsigned long chksum = ntohl(hdr.ih_hcrc);
 	hdr.ih_hcrc = 0;
 	if (crc32(0, (char *)&hdr, sizeof(image_header_t)) != chksum) {
 		return 0;
 	}
 
-	printf("Image1 Data Checksum --> ");
+	printf("Image1 Data Checksum --> \n");
 	chksum = ntohl(hdr.ih_dcrc);
 	unsigned long len = ntohl(hdr.ih_size);
 	raspi_read((char *)CFG_SPINAND_LOAD_ADDR, (unsigned int)address +  sizeof(image_header_t),len);
@@ -4026,6 +4058,7 @@ int check_image_firmware_ok(unsigned int address, unsigned long *size) { //检�
 	return 1;
 }
 int copy_image_firmware(unsigned int src, unsigned int dst, int len) { //从 src 处把 image 复制到 dst 
+	return 0;
 	printf("Copy Image: from %08X to %08X, size=0x%08X\n", src, dst, len);
 	int ret = raspi_read((char *)CFG_SPINAND_LOAD_ADDR, src, len);
 	if (ret <= 0) {
@@ -4039,6 +4072,7 @@ int copy_image_firmware(unsigned int src, unsigned int dst, int len) { //从 src
 }
 int reset_board() { // 重启 board
 	printf("reboot ...\n");
+	udelay(1000 * 1000 * 120);
 	while (1) {
 		run_command("reset", 0);
 		udelay(1000*5000);
@@ -4048,6 +4082,16 @@ int reset_board() { // 重启 board
 int check_image_validation_new() { // 升级逻辑函数
 	int len = 0;
 	int len1 = 0;
+
+	printf("\n====================\n%s\n", __func__);
+
+#if 0 // test 
+	if (check_image_firmware_ok(FIRMWARE_ADDRESS, &len1)) {
+		printf("fw ok, len:%08X\n", len1);
+	} else {
+		printf("fw not ok\n");
+	}
+#endif
 
 	if (misc_has_upgrade_flag()) {
 		printf("has misc upgrade flag, checking fw...\n");
@@ -4067,7 +4111,9 @@ int check_image_validation_new() { // 升级逻辑函数
 		reset_board();
 		return 0;
 	}
+	printf("no misc upgrade flag, normal...\n");
 
+	return 0;
 
 	int f_ok = check_image_firmware_ok(FIRMWARE_ADDRESS, &len);
 	int f1_ok = check_image_firmware_ok(FIRMWARE1_ADDRESS, &len1);
@@ -4076,7 +4122,8 @@ int check_image_validation_new() { // 升级逻辑函数
 			// two image all not ok , do nothing
 		} else {
 			printf("restore fw1 -> fw ...\n");
-			copy_image_firmware(FIRMWARE1_ADDRESS, FIRMWARE_ADDRESS, len1);
+			ret = copy_image_firmware(FIRMWARE1_ADDRESS, FIRMWARE_ADDRESS, len1);
+			printf("restore ret:%d\n", ret);
 			reset_board();
 			return 0;
 		} 
@@ -4085,7 +4132,8 @@ int check_image_validation_new() { // 升级逻辑函数
 			// two image all ok , do nothing
 		} else { 
 			printf("restore fw -> fw1 ...\n");
-			copy_image_firmware(FIRMWARE_ADDRESS, FIRMWARE1_ADDRESS, len);
+			ret = copy_image_firmware(FIRMWARE_ADDRESS, FIRMWARE1_ADDRESS, len);
+			printf("restore ret:%d\n", ret);
 			reset_board();
 			return 0;
 		}
