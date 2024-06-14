@@ -3995,16 +3995,64 @@ int misc_clear_upgrade_flag() { //清除升级标志
 
 	return 0;
 }
-int check_image_firmware(unsigned int address) { //检测address地方的image 有效性
+int check_image_firmware(unsigned int address, int *len) { //检测address地方的image 有效性
 }
 int copy_image_firmware(unsigned int src, unsigned int dst, int len) { //从 src 处把 image 复制到 dst 
 	return 0;
 }
 int reset_board() { // 重启 board
-	run_command("reset", 0);
+	printf("reboot ...\n");
+	while (1) {
+		run_command("reset", 0);
+		udelay(1000*5000);
+	}
 	return 0;
 }
 int check_image_validation_new() { // 升级逻辑函数
+	int len = 0;
+	int len1 = 0;
+
+	if (misc_has_upgrade_flag()) {
+		printf("has misc upgrade flag, checking fw...\n");
+		if (!check_image_firmware(FIRMWARE1_ADDRESS, &len1)) {
+			printf("checking fw failed, clear misc\n");
+			misc_clear_upgrade_flag();
+			reset_board();
+			return 0;
+		} 
+
+		printf("checking fw ok, do upgrade ...\n");
+		int ret = copy_image_firmware(FIRMWARE1_ADDRESS, FIRMWARE_ADDRESS, len1);
+		if (ret == 0) {
+			printf("upgrade ok, clear misc\n");
+			misc_clear_upgrade_flag();
+		}
+		reset_board();
+		return 0;
+	}
+
+
+	int f_ok = check_image_firmware(FIRMWARE_ADDRESS, &len);
+	int f1_ok = check_image_firmware(FIRMWARE1_ADDRESS, &len1);
+	if (f_ok == 0) {
+		if (f1_ok == 0) {
+			// two image all not ok , do nothing
+		} else {
+			printf("restore fw1 -> fw ...\n");
+			copy_image_firmware(FIRMWARE1_ADDRESS, FIRMWARE_ADDRESS, len1);
+			reset_board();
+			return 0;
+		} 
+	} else {
+		if (f1_ok == 0) {
+			// two image all ok , do nothing
+		} else { 
+			printf("restore fw -> fw1 ...\n");
+			copy_image_firmware(FIRMWARE_ADDRESS, FIRMWARE1_ADDRESS, len);
+			reset_board();
+			return 0;
+		}
+	}
 	return 0;
 }
 
