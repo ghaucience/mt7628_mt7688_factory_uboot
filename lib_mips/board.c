@@ -2087,9 +2087,6 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 	check_image_validation();
 #endif
 
-	//added by au
-	int check_image_validation_new();
-	check_image_validation_new();
 
 /*config bootdelay via environment parameter: bootdelay */
 	{
@@ -2177,6 +2174,14 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 
 
 	if(BootType == '3') {
+		//added by au
+		if (1) {
+			int check_image_validation_new();
+			check_image_validation_new();
+		}
+
+
+
 		char *argv[2];
 		sprintf(addr_str, "0x%X", CFG_KERN_ADDR);
 		argv[1] = &addr_str[0];
@@ -2214,6 +2219,24 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
             netHttpIPSet(gHttpIP);
       eth_initialize(gd->bd);
       NetLoopHttpd();
+			break;
+#endif
+
+#if 1 // au
+		case 'm':
+			printf("\n%c: System Load SystemCode then write to Flash via Serial. \n", 'm');
+
+			argc= 1;
+			setenv("autostart", "no");
+
+			my_tmp = do_load_serial_bin(cmdtp, 0, argc, argv);
+			NetBootFileXferSize=simple_strtoul(getenv("filesize"), NULL, 16);
+
+			int copy_image_firmware_from_serial_bin();
+			copy_image_firmware_from_serial_bin(NetBootFileXferSize);
+
+			//reset            
+			do_reset(cmdtp, 0, argc, argv);
 			break;
 #endif
 
@@ -2509,6 +2532,8 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 			break;
 
 		default:
+
+
 			printf("   \nSystem Boot Linux via Flash.\n");
 			do_bootm(cmdtp, 0, 1, argv);
 
@@ -4055,26 +4080,35 @@ int check_image_firmware_ok(unsigned int address, unsigned long *size) { //检�
 		return 0;
 	}
 
-	printf("Check Image Length < 12M\n");
-	if (len >= FIRMWARE_MAX_LENGTH) {
+	printf("Check Image Length(%08X) < %08X\n", len, FIRMWARE_MAX_LENGTH);
+	if (len > FIRMWARE_MAX_LENGTH) {
 		return 0;
 	}
 
-	*size = len;
+	printf("-- ok --\n");
+
+	*size = len + sizeof(image_header_t);
 
 	return 1;
 }
 int copy_image_firmware(unsigned int src, unsigned int dst, int len) { //从 src 处把 image 复制到 dst 
-	return 0;
 	printf("Copy Image: from %08X to %08X, size=0x%08X\n", src, dst, len);
+	printf("read from %08X, len: %08X..\n", src, len);
 	int ret = raspi_read((char *)CFG_SPINAND_LOAD_ADDR, src, len);
 	if (ret <= 0) {
 		return -1;
 	}
+	printf("write  to %08X, len: %08X..\n", dst, len);
 	ret = raspi_erase_write((char *)CFG_SPINAND_LOAD_ADDR, dst, len);
 	if (ret != 0) {
 		return -2;
 	}
+	printf("-- ok -- \n");
+	return 0;
+}
+int copy_image_firmware_from_serial_bin(ulong len) {
+	printf("Copy Image: from %08X to %08X, size=0x%08X\n", CFG_LOAD_ADDR, FIRMWARE_ADDRESS, len);
+	raspi_erase_write((char *)CFG_LOAD_ADDR, FIRMWARE_ADDRESS, len);
 	return 0;
 }
 int reset_board() { // 重启 board
