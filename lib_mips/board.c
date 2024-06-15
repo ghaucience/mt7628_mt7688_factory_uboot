@@ -4028,7 +4028,7 @@ int misc_has_upgrade_flag() {   //检测升级标志, 从`misc`分区里面读�
 	//my_view("[ret]:\n", buf, ret);
 	int i = 0;
 	for (i = 0; i < ret; i++) {
-		if ((buf[i]^0xff) == 0) {
+		if ((buf[i]^0xff) == 0 || (buf[i]^0x0A) == 0) {
 			buf[i] = 0;
 		}
 	}
